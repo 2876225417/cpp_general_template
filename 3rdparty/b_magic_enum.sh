@@ -50,6 +50,37 @@ mkdir -p "$MAGIC_ENUM_SOURCE_DIR"
 echo -e "${YELLOW}--- Handling magic_enum Source Repository ---${NC}"
 git_clone_or_update "$MAGIC_ENUM_REPO_URL" "$MAGIC_ENUM_SOURCE_DIR" "$MAGIC_ENUM_VERSION_TAG"
 
+print_usage() {
+    echo -e "${YELLOW}Usage: $0 [OPTIONS]${NC}"
+    echo ""
+    echo -e "${YELLOW}Options: ${NC}"
+    echo -e "   ${CYAN}--target_platform=<platform>         ${NC}       Specify the target platform."
+    echo -e "   Supported Platforms: ${GREEN}android, linux${NC}"
+}
+
+for i in "$@"; do
+    case $i in
+        --target_platform=*)
+        TARGET_PLATFORM="${i#*=}"
+        shift
+        ;;
+        *)
+        echo -e "${BRED}Error: Unknown option '$i'${NC}"
+        print_usage
+        exit 1
+        ;;
+    esac
+done
+
+if [ -z "$TARGET_PLATFORM" ]; then
+    echo -e "${BRED}Error: Target platform must be specified.${NC}"
+    print_usage
+    exit 1
+fi
+
+
+
+
 build_magic_enum_for_platform() {
     local platform="$1"
 
@@ -167,8 +198,19 @@ build_magic_enum_for_platform() {
     cd "${SCRIPT_BASE_DIR}"
 }
 
-build_magic_enum_for_platform "android"
-build_magic_enum_for_platform "host"
+echo -e "${GREEN}Target platform set to: ${CYAN}$TARGET_PLATFORM${NC}"
+if [ "$TARGET_PLATFORM" == "linux" ]; then
+    echo -e "${YELLOW}Build target is linux. Only 'linux-x86_64' will be built.${NC}"
+    build_magic_enum_for_platform "linux-x86_64"
+elif [ "$TARGET_PLATFORM" == "android" ]; then
+    echo -e "${YELLOW}Build target is android. All Android ABIS and 'linux-x86_64' will be built.${NC}"
+    build_magic_enum_for_platform "android"
+    build_magic_enum_for_platform "linux-x86_64"
+else 
+    echo -e "${BRED}Error: Unsupported target platform: '$TARGET_PLATFORM'.${NC}"
+    print_usage
+    exit 1
+fi
 
 echo ""
 echo -e "${YELLOW}===========================================================${NC}"
