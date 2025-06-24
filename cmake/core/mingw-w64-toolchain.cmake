@@ -1,3 +1,4 @@
+include_guard(GLOBAL)
 
 
 set(CMAKE_SYSTEM_NAME Windows)

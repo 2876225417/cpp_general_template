@@ -1,7 +1,6 @@
+include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
-
-
 
 if (NOT DEFINED _MODULE_INFO_INITIALIZED)
     set(_MODULE_INFO_INITIALIZED TRUE CACHE INTERNAL "Module info system initialized")
@@ -11,6 +10,7 @@ else()
     set(CONFIGURED_MODULES "" CACHE INTERNAL "List of configured modules")
 endif()
 
+
 # 用法: module_begin(<module_name>)
 function(module_begin MODULE_NAME)
     set(CURRENT_MODULE_NAME ${MODULE_NAME} PARENT_SCOPE)
@@ -18,15 +18,11 @@ function(module_begin MODULE_NAME)
     string(TIMESTAMP MODULE_START_TIME "%s")
     set(MODULE_${MODULE_NAME}_START_TIME ${MODULE_START_TIME} CACHE INTERNAL "")
 
-    string(LENGTH "====================== Configuring ${MODULE_NAME} Module ======================" HEADER_LENGTH)
-    string(REPEAT "=" ${HEADER_LENGTH} SEPARATOR)
-    pretty_message(STATUS "${SEPARATOR}")
-    pretty_message(STATUS "====================== Configuring ${MODULE_NAME} Module ======================")
-    pretty_message(STATUS "${SEPARATOR}")
+    pretty_message(VINFO_BANNER "Configuration ${MODULE_NAME} Module" "=" ${BANNER_WIDTH})
 
-    pretty_message(INFO "Module: ${MODULE_NAME}")
-    pretty_message(INFO "Location: ${CMAKE_CURRENT_SOURCE_DIR}")
-    pretty_message(INFO "Binary Dir: ${CMAKE_CURRENT_BINARY_DIR}")
+    pretty_message_kv(VINFO "Module" "${MODULE_NAME}")
+    pretty_message_kv(VINFO "Location" "${CMAKE_CURRENT_SOURCE_DIR}")
+    pretty_message_kv(VINFO "Binary Dir" "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 # 用法: module_show_files(<file_type> <file_list>)
@@ -34,7 +30,7 @@ function(module_show_files FILE_TYPE FILE_LIST)
     list(LENGTH FILE_LIST FILE_COUNT)
     
     if (FILE_COUNT GREATER 0) 
-        pretty_message(INFO "${FILE_TYPE}: ${FILE_COUNT} file(s)")
+        pretty_message(VINFO "${FILE_TYPE}: ${FILE_COUNT} file(s)")
         
         pretty_message(DEBUG "${FILE_TYPE} list:")
         foreach(file ${FILE_LIST})
@@ -190,17 +186,16 @@ function(module_end MODULE_NAME TARGET_NAME)
         endif()
     endif()
 
-    string(LENGTH "====================== ${MODULE_NAME} Configuration Complete ======================" FOOTER_LENGTH)
-    string(REPEAT "=" ${FOOTER_LENGTH} SEPARATOR)
-    pretty_message(STATUS "${SEPARATOR}")
-    message("")
+    pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
+    pretty_message(STATUS "")
 endfunction()
 
 # 用法: show_all_modules_summary()
 function(show_all_modules_summary)
-    pretty_message(IMPORTANT "╔════════════════════════════════════════════════════════════════════╗")
-    pretty_message(IMPORTANT "║                        Configuration Summary                       ║")
-    pretty_message(IMPORTANT "╚════════════════════════════════════════════════════════════════════╝")
+
+    pretty_message(IMPORTANT_LINE "=" ${BANNER_WIDTH})
+    pretty_message(IMPORTANT_BANNER "Configuration done" "=" ${BANNER_WIDTH})
+    pretty_message(IMPORTANT_LINE "=" ${BANNER_WIDTH})
 
     list(LENGTH CONFIGURED_MODULES MODULE_COUNT)
     pretty_message(INFO "Modules configured: ${MODULE_COUNT}")
@@ -220,7 +215,7 @@ function(show_all_modules_summary)
             pretty_message(SUCCESS "  ✓ ${module}")
         endif()
     endforeach()
-    pretty_message(IMPORTANT "══════════════════════════════════════════════════════════════════════")
+    pretty_message(STATUS_LINE "=" ${BANNER_WIDTH})
 endfunction()
 
 # 用法: check_module_dependencies(<module_name> REQUIRES dep1 dep2 ... OPTIONAL opt1 opt2 ...)
@@ -231,7 +226,7 @@ function(check_module_dependencies MODULE_NAME)
     set(FOUND_OPTIONAL "")
 
     if (ARG_REQUIRES)
-        pretty_message(INFO "Checking required dependencies...")
+        pretty_message(STATUS "Checking required dependencies...")
         foreach(dep ${ARG_REQUIRES})
             if (TARGET ${dep})
                 pretty_message(SUCCESS " ✓ ${dep} - Found")
@@ -243,7 +238,7 @@ function(check_module_dependencies MODULE_NAME)
     endif()
 
     if (ARG_OPTIONAL)
-        pretty_message(INFO "Checking optional dependencies...")
+        pretty_message(STATUS "Checking optional dependencies...")
         foreach(dep ${ARG_OPTIONAL})
             if (TARGET ${dep})
                 pretty_message(SUCCESS  "  ✓ ${dep} - Found")

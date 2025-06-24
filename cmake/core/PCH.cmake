@@ -1,4 +1,6 @@
-include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
+include_guard(GLOBAL)
+
+# include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
 
 
 # 描述: 检查当前工具链是否支持 PCH(一般用在主CMakeLists中)
@@ -126,7 +128,7 @@ function(create_pch_target PCH_TARGET_NAME PCH_HEADER)
     target_precompile_headers(${PCH_TARGET_NAME} INTERFACE ${PCH_HEADER})
     
     pretty_message(SUCCESS "Created reusable PCH target: ${PCH_TARGET_NAME}")
-    pretty_message(INFO    "  PCH header: ${PCH_HEADER}")
+    pretty_message_kv(VINFO "PCH header" "${PCH_HEADER}")
 endfunction()
 
 # 构建项目PCH
@@ -138,9 +140,7 @@ function(setup_project_pch)
         return()
     endif()
 
-    pretty_message(STATUS "==============================================")
     pretty_message(STATUS "Setting up Project PCH")
-    pretty_message(STATUS "==============================================")
     
     set(PCH_HEADER "${CMAKE_SOURCE_DIR}/include/pch.h")
     if(NOT EXISTS ${PCH_HEADER})
@@ -160,13 +160,7 @@ function(setup_project_pch)
         endforeach()
     endif()
 
-    pretty_message(INFO "")
-    pretty_message(INFO "To use PCH in your targets: ")
-    pretty_message(INFO "  target_link_libraries(your_target PRIVATE pch_global)")
-    pretty_message(INFO "Or:")
-    pretty_message(INFO "  enable_pch(your_target)")
-    
-    pretty_message(STATUS "==============================================")
+
 endfunction()
 
 # 统计 PCH 信息
@@ -176,22 +170,30 @@ function(show_pch_stats)
         return()
     endif()
 
-    pretty_message(INFO "PCH Configuration:")
-    pretty_message(INFO "  CMake Version: ${CMAKE_VERSION}")
-    pretty_message(INFO "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-    pretty_message(INFO "  PCH Supported: YES")
+    pretty_message_kv(VINFO "CMake Version" "${CMAKE_VERSION}")
+    pretty_message_kv(VINFO "Compiler"      "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+    pretty_message_kv(VINFO "PCH Supported" "YES")
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        pretty_message(INFO "  PCH Extension: .gch")
+        pretty_message_kv(VINFO "PCH Extension" ".gch")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        pretty_message(INFO "  PCH Extension: .pch")
+        pretty_message_kv(VINFO "PCH Extension" ".pch")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        pretty_message(INFO "  PCH Extension: .pch")
+        pretty_message_kv(VINFO "PCH Extension" ".pch")
     endif()
+
+    pretty_message(TIP "To use PCH in your targets: ")
+    pretty_message(TIP "  target_link_libraries(your_target PRIVATE pch_global)")
+    pretty_message(TIP "Or:")
+    pretty_message(TIP "  enable_pch(your_target)")
+
+    pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
+    pretty_message(STATUS "")
 endfunction()
 
 # 配置 PCH
 function(pch_configure)
+    pretty_message(VINFO_BANNER "Configuring PCH" "=" ${BANNER_WIDTH})
     if (CMAKE_BUILD_TYPE MATCHES "[Dd]eb")
         option(USE_PCH_IN_DEBUG "Use PCH in Debug builds" ON)
         if (NOT USE_PCH_IN_DEBUG)
