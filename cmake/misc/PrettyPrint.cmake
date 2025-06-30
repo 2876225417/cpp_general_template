@@ -8,8 +8,8 @@ option(USE_CPP_COLORED_DEBUG_OUTPUT "Enable colored messages in Debug output for
 option(ENABLE_EXTERNAL_FMT          "Enable external {fmt} (even though std fmt is available)" ON)
 option(MESSAGE_PADDED               "Enable padded to align prefixes for pretty message"       ON)
 
-set(_PRETTY_MESSAGE_MAX_LENGTH 105  CACHE STRING "Max message length for pretty_message"                         FORCE)
-set(BANNER_WIDTH               80 CACHE STRING "Banner width affecting all pretty_message with banner or title" FORCE)
+set(_PRETTY_MESSAGE_MAX_LENGTH 105 CACHE STRING "Max message length for pretty_message"                         FORCE)
+set(BANNER_WIDTH               80  CACHE STRING "Banner width affecting all pretty_message with banner or title" FORCE)
 set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"               FORCE)
 
 # 使用 string(ASCII <n>) 生成字符以解决 “/0” 无效转义序列问题
@@ -283,7 +283,6 @@ if (CMAKE_CXX_STANDARD GREATER_EQUAL 20)
     # Restore
     set(CMAKE_REQUIRED_FLAGS      ${CMAKE_REQUIRED_FLAGS_})
     set(CMAKE_REQUIRED_LIBRARIES  ${CMAKE_REQUIRED_LIBRARIES_})
-
 
     if (_HAS_STD_FORMAT)    # Enable cpp std format 
         set(HAVE_STD_FORMAT ON CACHE INTERNAL "std::format is avaible")

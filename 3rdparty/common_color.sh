@@ -4,7 +4,6 @@
 # ANSI Color Codes
 # 使用方法: echo -e "${GREEN}这是绿色文本${NC}"
 
-
 # 重置所有颜色和样式
 NC='\033[0m' # No Color
 

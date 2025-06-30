@@ -19,13 +19,60 @@ else
     BBLACK='' BRED='' BGREEN='' BYELLOW='' BBLUE='' BPURPLE='' BCYAN='' BWHITE=''
 fi
 
-# 引入 NDK 工具链配置 export ANDROID_NDK_HOME
-if [ -f "${SCRIPT_DIR_REALPATH}/common_env.sh" ]; then
-    source "${SCRIPT_DIR_REALPATH}/common_env.sh"
-else
-    echo -e "${BRED}ERROR: NO ANDROID_NDK_HOME CONFIGURED.${NC}"
-    echo -e "${BYELLOW}Tip: Try to export ANDROID_NDK_HOME="ANDROID NDK Dev Toolchain."${NC}"
+# 指定构建平台
+print_usage() {
+    echo -e "${YELLOW}Usage: $0 [OPTIONS]${NC}"
+    echo ""
+    echo -e "${YELLOW}Options: ${NC}"
+    echo -e "   ${CYAN}--target_platform=<platform>         ${NC}       Specify the target platform."
+    echo -e "   Supported Platforms: ${GREEN}android, linux, all(both android and linux)${NC}"
+}
+
+TARGET_PLATFORM=""
+for i in "$@"; do
+    case $i in
+        --target_platform=*)
+        TARGET_PLATFORM="${i#*=}"
+        shift
+        ;;
+        *)
+        echo -e "${BRED}Error: Unknown option '$i'${NC}"
+        print_usage
+        exit 1
+        ;;
+    esac
+done
+
+if [ -z "$TARGET_PLATFORM" ]; then
+    echo -e "${BRED}Error: Target platform must be specified.${NC}"
+    print_usage
     exit 1
+fi
+
+ ABIS_TO_BUILD=("linux-x86_64")
+
+if [[ "$TARGET_PLATFORM" == "android" || "$TARGET_PLATFORM" == "all" ]]; then 
+    # 引入 NDK 工具链配置 export ANDROID_NDK_HOME
+    if [ -f "${SCRIPT_DIR_REALPATH}/common_env.sh" ]; then
+        source "${SCRIPT_DIR_REALPATH}/common_env.sh"
+    else
+        echo -e "${BRED}ERROR: NO ANDROID_NDK_HOME CONFIGURED.${NC}"
+        echo -e "${BYELLOW}Tip: Try to export ANDROID_NDK_HOME="ANDROID NDK Dev Toolchain."${NC}"
+        exit 1
+    fi
+
+    # 配置构建 ABI 及相关的 API Level
+    ABIS_TO_BUILD+=("armeabi-v7a" "arm64-v8a" "x86" "x86_64")
+    ANDROID_API_ARM32="21"
+    ANDROID_API_ARM64="24"
+    ANDROID_API_X86="24"
+    ANDROID_API_X86_64="24"
+    CLANG_VERSION_FOR_JAM="20.0"
+    HOST_TAG_FOR_JAM="linux-x86_64"
+
+    # 配置 NDK 工具链
+    NDK_TOOLCHAIN_BIN_PATH="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin"
+    NDK_SYSROOT="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 fi
 
 BOOST_VERSION="1.88.0"
@@ -41,25 +88,11 @@ BOOST_SOURCE_DIR_FULL_PATH="${BOOST_SOURCE_PARENT_DIR}/${BOOST_SOURCE_DIR_NAME}"
 echo -e "${YELLOW}--- Clearing Boost source---${NC}"
 rm -rf "$BOOST_SOURCE_DIR_FULL_PATH"
 
-# --- Boost 构建目录
+# --- Boost 构建目录 ---
 BOOST_BUILD_ROOT_DIR="${SCRIPT_BASE_DIR}/build/boost"
 
-# --- Boost 安装目录
+# --- Boost 安装目录 ---
 BOOST_INSTALL_ROOT_DIR="${SCRIPT_BASE_DIR}/boost"
-
-# 配置构建 ABI 及相关的 API Level
-ABIS_TO_BUILD=("armeabi-v7a" "arm64-v8a" "x86" "x86_64" "linux-x86_64")
-#ABIS_TO_BUILD=("linux-x86_64")
-ANDROID_API_ARM32="21"
-ANDROID_API_ARM64="24"
-ANDROID_API_X86="24"
-ANDROID_API_X86_64="24"
-CLANG_VERSION_FOR_JAM="20.0"
-HOST_TAG_FOR_JAM="linux-x86_64"
-
-# 配置 NDK 工具链
-NDK_TOOLCHAIN_BIN_PATH="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin"
-NDK_SYSROOT="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 
 # ---- Boost 源码 ----
 echo -e "${YELLOW}--- Preparing Boost source: $BOOST_SOURCE_PARENT_DIR ---${NC}"
@@ -90,26 +123,25 @@ else
     echo -e "${BLUE}--- b2 EXISTED ---${NC}"
 fi
 
-# ---- 生成 project-config.jam ----
-PYTHON_JAM_GENERATOR="${SCRIPT_DIR_REALPATH}/gen_boost_jam.py"
-echo -e "${BLUE}--- Generating project-config.jam ---${NC}"
-export ENV_ANDROID_NDK_HOME="${ANDROID_NDK_HOME}"
-export ENV_ANDROID_API_ARM64="${ANDROID_API_ARM64}"
-export ENV_ANDROID_API_ARM32="${ANDROID_API_ARM32}"
-export ENV_ANDROID_API_X86="${ANDROID_API_X86}"
-export ENV_ANDROID_API_X86_64="${ANDROID_API_X86_64}"
-export ENV_HOST_TAG="${HOST_TAG_FOR_JAM}"
-export ENV_CLANG_VERSION_FOR_JAM="${CLANG_VERSION_FOR_JAM}"
-
-
+if [[ "$TARGET_PLATFORM" == "android" || "$TARGET_PLATFORM" == "all" ]]; then 
+    # ---- 生成 project-config.jam ----
+    PYTHON_JAM_GENERATOR="${SCRIPT_DIR_REALPATH}/gen_boost_jam.py"
+    echo -e "${BLUE}--- Generating project-config.jam ---${NC}"
+    export ENV_ANDROID_NDK_HOME="${ANDROID_NDK_HOME}"
+    export ENV_ANDROID_API_ARM64="${ANDROID_API_ARM64}"
+    export ENV_ANDROID_API_ARM32="${ANDROID_API_ARM32}"
+    export ENV_ANDROID_API_X86="${ANDROID_API_X86}"
+    export ENV_ANDROID_API_X86_64="${ANDROID_API_X86_64}"
+    export ENV_HOST_TAG="${HOST_TAG_FOR_JAM}"
+    export ENV_CLANG_VERSION_FOR_JAM="${CLANG_VERSION_FOR_JAM}"
+    CLANG_MAJOR_VERSION_SHORT=$(echo $CLANG_VERSION_FOR_JAM | cut -d. -f1)
+fi
 
 # --- 构建和安装的根目录 ---
 mkdir -p "$BOOST_BUILD_ROOT_DIR"
 mkdir -p "$BOOST_INSTALL_ROOT_DIR"
 
 cd "$SCRIPT_BASE_DIR"
-
-CLANG_MAJOR_VERSION_SHORT=$(echo $CLANG_VERSION_FOR_JAM | cut -d. -f1)
 
 for CURRENT_ABI in "${ABIS_TO_BUILD[@]}"; do
     echo ""
@@ -123,12 +155,20 @@ for CURRENT_ABI in "${ABIS_TO_BUILD[@]}"; do
     CURRENT_API_LEVEL_FOR_B2=""
     B2_EXTRA_DEFINES_FOR_B2=""
 
-    echo -e "${YELLOW}Building Boost for ABI: $CURRENT_ABI, Toolchain: clang-${TOOLSET_NAME_FOR_B2_VERSION_SUFFIX}, Target API: $CURRENT_API_LEVEL_FOR_B2${NC}"
+    if [[ "$TARGET_PLATFORM" == "android" || "$TARGET_PLATFORM" == "all" ]]; then 
+        echo -e "${YELLOW}Building Boost for ABI: $CURRENT_ABI, Toolchain: clang-${TOOLSET_NAME_FOR_B2_VERSION_SUFFIX}, Target API: $CURRENT_API_LEVEL_FOR_B2${NC}"
+    else 
+        echo -e "${YELLOW}Building Boost for $CURRENT_ABI${NC}"
+    fi
     echo -e "${YELLOW}==============================================================================================${NC}"
 
-    INSTALL_DIR_ABI="${BOOST_INSTALL_ROOT_DIR}/boost_android_${CURRENT_ABI}"
-    B2_BUILD_DIR_ABI="${BOOST_BUILD_ROOT_DIR}/boost_build_android_${CURRENT_ABI}"
-
+    if [[ "$TARGET_PLATFORM" == "android" || "$TARGET_PLATFORM" == "all" ]]; then 
+        INSTALL_DIR_ABI="${BOOST_INSTALL_ROOT_DIR}/boost_android_${CURRENT_ABI}"
+        B2_BUILD_DIR_ABI="${BOOST_BUILD_ROOT_DIR}/boost_build_android_${CURRENT_ABI}"
+    else
+        INSTALL_DIR_ABI="${BOOST_INSTALL_ROOT_DIR}/boost_${CURRENT_ABI}"
+        B2_BUILD_DIR_ABI="${BOOST_BUILD_ROOT_DIR}/boost_build_${CURRENT_ABI}"
+    fi
     mkdir -p "$B2_BUILD_DIR_ABI"
     mkdir -p "$INSTALL_DIR_ABI"
 
@@ -153,6 +193,8 @@ for CURRENT_ABI in "${ABIS_TO_BUILD[@]}"; do
             "--build-dir=${B2_BUILD_DIR_ABI}"
             "toolset=gcc"
             "link=shared"
+            "threading=multi"
+            "cxxstd=17"
             "variant=release"
             "--layout=system"
             "-j$(nproc)"
@@ -264,12 +306,14 @@ for CURRENT_ABI in "${ABIS_TO_BUILD[@]}"; do
         echo "Build Configuration (b2 variant): release"    >> "$REPORT_FILE"
         echo "Linkage: shared"                  >> "$REPORT_FILE"
         echo "Threading: multi"                 >> "$REPORT_FILE"
-        echo "Android API Level (configured in project-config.jam): $CURRENT_API_LEVEL_FOR_B2" >> "$REPORT_FILE"
-        echo "NDK Path: $ENV_ANDROID_NDK_HOME"  >> "$REPORT_FILE"
-        echo "NDK Version (from source.properties): $NDK_VERSION_STRING" >> "$REPORT_FILE"
-        echo "CLANG_CXX_COMPILER_PATH: $CLANG_COMPILER_PATH"    >> "$REPORT_FILE"
-        echo "CLANG_C_COMPILER: $CLANG_C_COMPILER_PATH"         >> "$REPORT_FILE"
-        echo "Clang Version: $CLANG_VERSION_STRING"             >> "$REPORT_FILE"
+        if [[ "$TARGET_PLATFORM" == "android" || "$TARGET_PLATFORM" == "all" ]]; then 
+            echo "Android API Level (configured in project-config.jam): $CURRENT_API_LEVEL_FOR_B2" >> "$REPORT_FILE"
+            echo "NDK Path: $ENV_ANDROID_NDK_HOME"  >> "$REPORT_FILE"
+            echo "NDK Version (from source.properties): $NDK_VERSION_STRING" >> "$REPORT_FILE"
+            echo "CLANG_CXX_COMPILER_PATH: $CLANG_COMPILER_PATH"    >> "$REPORT_FILE"
+            echo "CLANG_C_COMPILER: $CLANG_C_COMPILER_PATH"         >> "$REPORT_FILE"
+            echo "Clang Version: $CLANG_VERSION_STRING"             >> "$REPORT_FILE"
+        fi
         echo ""                                 >> "$REPORT_FILE"
         echo "b2 Arguments Used: "              >> "$REPORT_FILE"
         printf "    %s\n" "${B2_ARGS[@]}"       >> "$REPORT_FILE"
