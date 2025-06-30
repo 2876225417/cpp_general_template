@@ -9,7 +9,6 @@ SCRIPT_DIR_REALPATH=$(dirname "$(realpath "$0")")
 #   Boost Version: 1.88.0  #
 # # # # # # # # # # # # # #
 
-
 # 引入颜色输出配置
 if [ -f "${SCRIPT_DIR_REALPATH}/common_color.sh" ]; then
     source "${SCRIPT_DIR_REALPATH}/common_color.sh"

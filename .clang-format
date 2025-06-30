@@ -1,0 +1,34 @@
+Language: Cpp
+Standard: c++20
+
+# 基础格式
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+# 括号和空格
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+
+# 换行
+BreakBeforeBraces: Attach
+AlwaysBreakTemplateDeclarations: Yes
+BreakConstructorInitializers: BeforeColon
+
+# 头文件排序
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^".*\.h"$'
+    Priority: 1
+  - Regex: '^<.*\.h>$'
+    Priority: 2
+  - Regex: '^<.*>$'
+    Priority: 3
+
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
