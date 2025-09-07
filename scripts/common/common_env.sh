@@ -5,8 +5,8 @@
 SCRIPT_DIR_REALPATH=$(dirname "$(realpath "$0")")
 
 # 引入颜色输出配置
-if [ -f "${SCRIPT_DIR_REALPATH}/scripts/common_color.sh" ]; then
-    source "${SCRIPT_DIR_REALPATH}/scripts/common_color.sh"
+if [ -f "${SCRIPT_DIR_REALPATH}/common_color.sh" ]; then
+    source "${SCRIPT_DIR_REALPATH}/common_color.sh"
 else
     echo "Warning: NOT FOUND common_color.sh, the output will be without color." >&2
     NC='' RED='' GREEN='' YELLOW='' BLUE='' PURPLE='' CYAN='' WHITE=''

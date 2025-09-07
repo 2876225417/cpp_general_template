@@ -42,3 +42,5 @@
 3rdparty/nlohmann_json
 3rdparty/fmt/
 3rdparty/openssl/
+
+tmp
