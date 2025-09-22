@@ -1,12 +1,11 @@
 include_guard(GLOBAL)
 
 set(OPENSSL_POSSIBLE_PATHS
-    "${DEPENDENCY_ROOT_DIR}/openssl/openssl_linux-x86_64"
+    "${DEPENDENCY_ROOT_DIR}/openssl/linux-x86_64"
     "${DEPENDENCY_ROOT_DIR}/openssl/build"
     "${DEPENDENCY_ROOT_DIR}/openssl/install"
     "${DEPENDENCY_ROOT_DIR}/openssl"
 )
-
 
 foreach(path ${OPENSSL_POSSIBLE_PATHS})
     set(config_path "${path}/lib64/cmake/OpenSSL")

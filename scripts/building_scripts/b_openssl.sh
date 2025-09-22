@@ -113,7 +113,7 @@ for CURRENT_ABI in "${ABIS_TO_BUILD[@]}"; do
     echo -e "${YELLOW}Building OpenSSL for ABI: $CURRENT_ABI ${NC}"
     echo -e "${YELLOW}==============================================================================================${NC}"
 
-    INSTALL_DIR_ABI="${OPENSSL_INSTALL_ROOT_DIR}/openssl_${CURRENT_ABI}"
+    INSTALL_DIR_ABI="${OPENSSL_INSTALL_ROOT_DIR}/${CURRENT_ABI}"
     LOG_FILE_FOR_ABI="${OPENSSL_LOG_DIR}/openssl_build_${CURRENT_ABI}.log"
     
     # 清理旧目录和日志

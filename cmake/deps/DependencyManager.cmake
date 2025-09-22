@@ -1,9 +1,9 @@
 include_guard(GLOBAL)
 
 set(DEPENDENCY_FIND_STRATEGIES
-    "MANUAL" # 手动指定
-    "LOCAL"  # 项目本地的 3rdparty
-    "SYSTEM" # 系统安装的库
+    "MANUAL" # Specify manually
+    "LOCAL"  # Local 3rdparty path
+    "SYSTEM" # System lib
 )
 
 set(DEPENDENCY_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdparty")
@@ -30,7 +30,7 @@ function(_create_dependency_cache_variables)
         get_filename_component(dep_name ${export_file} NAME_WE)
         string(REGEX REPLACE "Export$" "" dep_name ${dep_name})
         string(TOUPPER ${dep_name} dep_upper)
-        
+
         set(${dep_upper}_FIND_STRATEGY "${DEFAULT_FIND_STRATEGY}" CACHE STRING "Find strategy for ${dep_name}")
         set_property(CACHE ${dep_upper}_FIND_STRATEGY PROPERTY STRINGS ${DEPENDENCY_FIND_STRATEGIES})
 
@@ -55,7 +55,7 @@ function(find_dependency dep_name)
     else()
         set(strategy ${DEFAULT_FIND_STRATEGY})
     endif()
-    
+
     pretty_message(VINFO_BANNER "Configuring ${dep_name}" "=" ${BANNER_WIDTH})
 
     pretty_message_kv(VINFO "Finding ${dep_name} using strategy" "${strategy}")
@@ -80,7 +80,7 @@ function(find_dependency dep_name)
     if (NOT found)
         pretty_message(OPTIONAL "${strategy} strategy failed, trying fallback strategies")
         foreach(fallback_strategy ${DEPENDENCY_FIND_STRATEGIES})
-            if (NOT fallback_strategy STREQUAL strategy)    
+            if (NOT fallback_strategy STREQUAL strategy)
                 pretty_message(INFO "Trying fallback strategy: ${fallback_strategy}")
                 if (fallback_strategy STREQUAL "LOCAL")
                     _find_dependency_local(${dep_name} found)
@@ -97,7 +97,7 @@ function(find_dependency dep_name)
         endforeach()
     endif()
 
-    if (found) 
+    if (found)
         set_property(GLOBAL APPEND PROPERTY FOUND_DEPENDENCIES ${dep_name})
         pretty_message(SUCCESS "  ✓ ${dep_name} found successfully")
         pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
@@ -115,7 +115,7 @@ function(find_dependency dep_name)
     endif()
 endfunction()
 
-# 手动路径查找
+# Find dependency manually
 function(_find_dependency_manual dep_name out_found)
     string(TOUPPER ${dep_name} dep_upper)
 
@@ -127,7 +127,7 @@ function(_find_dependency_manual dep_name out_found)
 
     set(manual_path ${${dep_upper}_ROOT})
     pretty_message_kv(VINFO "Using manual path for ${dep_name}" "${manual_path}")
-    
+
     find_package(${dep_name} QUIET CONFIG PATHS ${manual_path} NO_DEFAULT_PATH)
 
     if (${dep_name}_FOUND)
@@ -139,8 +139,7 @@ function(_find_dependency_manual dep_name out_found)
     endif()
 endfunction()
 
-
-# 本地 3rdparty 中查找
+# Find dependency in local 3rdparty
 function(_find_dependency_local dep_name out_found)
     set(export_file "${DEPENDENCY_EXPORTS_DIR}/${dep_name}Export.cmake")
     if (EXISTS ${export_file})
@@ -172,15 +171,15 @@ function(_find_dependency_local dep_name out_found)
             endif()
         endif()
     endforeach()
-    
+
     set(${out_found} FALSE PARENT_SCOPE)
 endfunction()
 
-# 在系统中进行查找
+# Find dependency in system libs
 function(_find_dependency_system dep_name out_found)
     pretty_message(INFO "Searching for ${dep_name} in system")
     find_package(${dep_name} QUIET CONFIG)
-    
+
     if (${dep_name}_FOUND)
         pretty_message(SUCCESS "Found ${dep_name} in system")
         set(${out_found} TRUE PARENT_SCOPE)
@@ -189,7 +188,7 @@ function(_find_dependency_system dep_name out_found)
     endif()
 endfunction()
 
-# 批量查找依赖
+# Find dependency in batch
 function(find_dependencies)
     cmake_parse_arguments(FIND_DEPS
         ""
@@ -204,8 +203,8 @@ function(find_dependencies)
 endfunction()
 
 function(print_dependency_summary)
-    get_property(found_deps GLOBAL PROPERTY FOUND_DEPENDENCIES)    
-    
+    get_property(found_deps GLOBAL PROPERTY FOUND_DEPENDENCIES)
+
     pretty_message(IMPORTANT "╔════════════════════════════════════════════════════════════════════╗")
     pretty_message(IMPORTANT "║                        Dependency   Summary                        ║")
     pretty_message(IMPORTANT "╚════════════════════════════════════════════════════════════════════╝")

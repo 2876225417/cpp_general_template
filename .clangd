@@ -1,56 +1,108 @@
-# --- 编译指令 ---
+# Clang Diagnostics Configs
+
 CompileFlags:
     CompilationDatabase: build
 
-    FallbackFlags:
-        - -std=c++23
-        - -Wall
-        - -Wextra
-        - -I./include
-        - -I./build
+  FallbackFlags:
+    - -std=c++23
+    - -Wall
+    - -Wextra
+    - -Wpedantic
+    - -Wshadow
+    - -Wconversion
+    - -Wsign-conversion
+    - -Wnull-dereference
+    - -Wdouble-promotion
+    - -Wformat=2
+    - -Wuninitialized
+    - -Wswitch-default
+    - -Wswitch-enum
+    - -Wcast-align
+    - -Wcast-qual
+    - -Wctor-dtor-privacy
+    - -Wdisabled-optimization
+    - -Wold-style-cast
+    - -Woverloaded-virtual
+    - -Wredundant-decls
+    - -Wsign-promo
+    - -Wstrict-null-sentinel
+    - -Wstrict-overflow=5
+    - -Wsuggest-override
+    - -Wundef
+    - -Wunreachable-code
+    - -Wunused
+    - -Wuseless-cast
+    - -Wzero-as-null-pointer-constant
+    - -I./include
+    - -I./build
+    - -g
+    - -O0
 
+  Remove:
+    - -mno-direct-extern-access
+    # Show more debug info
+    # - -Wno-unused-variable
+    # - -Wno-unused-parameter
 
-    Remove:
-        - -mno-direct-extern-access
-
-# --- 索引编制 ---
 Index:
     Background: Build
     StandardLibrary: Yes
     External: Yes
+    Threads: 8
 
-# --- 代码补全 ---
 Completion:
-    # 获取来自所有作用域中的符号
     AllScopes: Yes
-
     InsertIncludes: Auto
+    FilterAndSort: Yes
+    Snippets: Yes
 
-    # Snippets: Yes
-
-# --- 诊断与静态分析 ---
 Diagnostics:
-    ClangTidy:
-        Add:
-            - modernize-*
-            - readability-*
-            - performance-*
-            - bugprone-*
-            - cppcoreguidelines-*
-        Remove:
-            - readability-magic-numbers
+  ClangTidy:
+    Add:
+      - cppcoreguidelines-*
+      - modernize-*
+      - readability-*
+      - -readability-magic-numbers
+      - performance-* 
+      - bugprone-*
+      - cert-*
+      - misc-*
+      - clang-analyzer-*
+      - hicpp-*
+      - fuchsia-*
+      
+    Remove:
+      - readability-magic-numbers
+      - cppcoreguidelines-pro-bounds-pointer-arithmetic
 
-    UnusedIncludes: Yes
-    MissingIncludes: Yes
-
-    Suppress:
-        - unknown-argument
+  UnusedIncludes: Yes
+  MissingIncludes: Yes
+  
+  Suppress:
+    - unknown-argument
+    - tentatively-defined-symbol
 
 InlayHints:
-    Enabled: Yes
-    ParameterNames: Yes
-    DeducedTypes: Yes
-    Designators: Yes
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  Designators: Yes
+  BlockEnd: Yes
+  VariableTypes: Yes
+  FunctionLikeMacros: Yes
 
 Hover:
     ShowAKA: Yes
+
+Format:
+  Style: file
+CodeActions:
+  SpeculativeErrorCorrection: Yes
+  UnusedIncludes: Yes
+  MissingIncludes: Yes
+  Tidy: Yes
+FileStatus:
+  Enabled: Yes
+Memory:
+  BackgroundIndex: Yes
+  BackgroundQueueSize: 100

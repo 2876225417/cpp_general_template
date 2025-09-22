@@ -1,9 +1,6 @@
 include_guard(GLOBAL)
 
-# include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
-
-
-# 描述: 检查当前工具链是否支持 PCH(一般用在主CMakeLists中)
+# Check PCH valide(Use this in root CMakeLists)
 function(check_pch_support)
     if (CMAKE_VERSION VERSION_LESS "3.16")
         pretty_message(WARNING "CMake version < 3.16, PCH support disabled")
@@ -20,8 +17,8 @@ function(check_pch_support)
     endif()
 endfunction()
 
-# 描述: 启用PCH (一般用在主CMakeLists中)
-# 用法: enable_pch(<target> [INTERFACE] [PRIVATE <headers>...] [PUBLIC <headers>...])
+# Enable PCH (IMPORTANT: Use this in root CMakeLists)
+# Usage: enable_pch(<target> [INTERFACE] [PRIVATE <headers>...] [PUBLIC <headers>...])
 function(enable_pch TARGET_NAME)
     cmake_parse_arguments(ARG "INTERFACE" "" "PRIVATE;PUBLIC" ${ARGN})
 
@@ -59,8 +56,8 @@ function(enable_pch TARGET_NAME)
     endif()
 endfunction()
 
-# 描述: 为目标启用分层 PCH
-# 用法: enable_layered_pch(<target> [BASE_PCH <base_pch>] [MODULE_PCH <module_pch>])
+# Enable layered PCH for specified target
+# Usage: enable_layered_pch(<target> [BASE_PCH <base_pch>] [MODULE_PCH <module_pch>])
 function(enable_layered_pch TARGET_NAME)
     cmake_parse_arguments(ARG "" "BASE_PCH;MODULE_PCH" "" ${ARGN})
 
@@ -73,12 +70,12 @@ function(enable_layered_pch TARGET_NAME)
         return()
     endif()
 
-    # 默认主 pch.h
+    # Default main pch.h
     if (NOT ARG_BASE_PCH)
         set(ARG_BASE_PCH "${CMAKE_SOURCE_DIR}/include/pch.h")
     endif()
 
-    # 为模块指定特定的 PCH
+    # Specify PCH for target
     if (ARG_MODULE_PCH AND EXISTS ${ARG_MODULE_PCH})
         target_precompile_headers(${TARGET_NAME} PRIVATE ${ARG_MODULE_PCH})
         pretty_message(INFO "Layered PCH enabled for target: ${TARGET_NAME}")
@@ -90,8 +87,8 @@ function(enable_layered_pch TARGET_NAME)
     endif()
 endfunction()
 
-# 描述: 自动检测并启用分层 PCH
-# 用法： auto_enable_pch(<target> <module_name>)
+# Find PCH paths for each layer and enable them
+# Usage： auto_enable_pch(<target> <module_name>)
 function(auto_enable_pch TARGET_NAME MODULE_NAME)
     if (NOT PCH_SUPPORTED)
         return()
@@ -118,7 +115,7 @@ function(auto_enable_pch TARGET_NAME MODULE_NAME)
 
 endfunction()
 
-# 描述: 创建PCH目标
+# Create PCH target
 function(create_pch_target PCH_TARGET_NAME PCH_HEADER)
     if (NOT PCH_SUPPORTED)
         return()
@@ -131,7 +128,7 @@ function(create_pch_target PCH_TARGET_NAME PCH_HEADER)
     pretty_message_kv(VINFO "PCH header" "${PCH_HEADER}")
 endfunction()
 
-# 构建项目PCH
+# Build PCH
 function(setup_project_pch)
     cmake_parse_arguments(ARG "" "" "TARGETS" ${ARGN})
 
@@ -163,7 +160,7 @@ function(setup_project_pch)
 
 endfunction()
 
-# 统计 PCH 信息
+# PCH Stat
 function(show_pch_stats)
     if(NOT PCH_SUPPORTED)
         pretty_message(INFO "PCH not supported on this platform")
@@ -191,7 +188,7 @@ function(show_pch_stats)
     pretty_message(STATUS "")
 endfunction()
 
-# 配置 PCH
+# Configure PCH
 function(pch_configure)
     pretty_message(VINFO_BANNER "Configuring PCH" "=" ${BANNER_WIDTH})
     if (CMAKE_BUILD_TYPE MATCHES "[Dd]eb")

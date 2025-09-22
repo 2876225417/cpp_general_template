@@ -4,14 +4,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
 
 if (NOT DEFINED _MODULE_INFO_INITIALIZED)
     set(_MODULE_INFO_INITIALIZED TRUE CACHE INTERNAL "Module info system initialized")
-    set(CONFIGURED_MODULES "" CACHE INTERNAL "List of configured modules")
-    set(MODULE_INFO_LIST   "" CACHE INTERNAL "Detailed module information")
+    set(CONFIGURED_MODULES       ""   CACHE INTERNAL "List of configured modules")
+    set(MODULE_INFO_LIST         ""   CACHE INTERNAL "Detailed module information")
 else()
-    set(CONFIGURED_MODULES "" CACHE INTERNAL "List of configured modules")
+    set(CONFIGURED_MODULES       ""   CACHE INTERNAL "List of configured modules")
 endif()
 
-
-# 用法: module_begin(<module_name>)
+# Usage: module_begin(<module_name>)
 function(module_begin MODULE_NAME)
     set(CURRENT_MODULE_NAME ${MODULE_NAME} PARENT_SCOPE)
 
@@ -20,12 +19,12 @@ function(module_begin MODULE_NAME)
 
     pretty_message(VINFO_BANNER "Configuration ${MODULE_NAME} Module" "=" ${BANNER_WIDTH})
 
-    pretty_message_kv(VINFO "Module" "${MODULE_NAME}")
-    pretty_message_kv(VINFO "Location" "${CMAKE_CURRENT_SOURCE_DIR}")
-    pretty_message_kv(VINFO "Binary Dir" "${CMAKE_CURRENT_BINARY_DIR}")
+    pretty_message_kv(VINFO     "Module"     "${MODULE_NAME}")
+    pretty_message_kv(VINFO     "Location"   "${CMAKE_CURRENT_SOURCE_DIR}")
+    pretty_message_kv(VINFO     "Binary Dir" "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
-# 用法: module_show_files(<file_type> <file_list>)
+# Usage: module_show_files(<file_type> <file_list>)
 function(module_show_files FILE_TYPE FILE_LIST)
     list(LENGTH FILE_LIST FILE_COUNT)
     
@@ -44,7 +43,7 @@ function(module_show_files FILE_TYPE FILE_LIST)
     endif()
 endfunction()
 
-# 用法: module_target_info(<target_name> [SHOW_PROPERTIES]) 
+# Usage: module_target_info(<target_name> [SHOW_PROPERTIES]) 
 function(module_target_info TARGET_NAME)
     set(options SHOW_PROPERTIES)
     cmake_parse_arguments(ARG "${options}" "" "" ${ARGN})
@@ -53,7 +52,6 @@ function(module_target_info TARGET_NAME)
         pretty_message(ERROR "Target '${TARGET_NAME}' does not exist")
         return()
     endif()
-
 
     get_target_property(TARGET_TYPE            ${TARGET_NAME} TYPE)
     get_target_property(TARGET_SOURCES         ${TARGET_NAME} SOURCES)
@@ -119,7 +117,7 @@ function(module_target_info TARGET_NAME)
 endfunction()
 
 
-# 用法: module_show_dependencies(<target_name>)
+# Usage: module_show_dependencies(<target_name>)
 function(module_show_dependencies TARGET_NAME)
     if (NOT TARGET ${TARGET_NAME})
         return()
@@ -154,7 +152,7 @@ function(module_show_dependencies TARGET_NAME)
     endif()
 endfunction()
 
-# 用法: module_end(<module_name> <target_name> [OPTIONS])
+# Usage: module_end(<module_name> <target_name> [OPTIONS])
 function(module_end MODULE_NAME TARGET_NAME)
     set(options SHOW_SUMMARY NO_TIMING)
     cmake_parse_arguments(ARG "${options}" "" "" ${ARGN})
@@ -190,7 +188,7 @@ function(module_end MODULE_NAME TARGET_NAME)
     pretty_message(STATUS "")
 endfunction()
 
-# 用法: show_all_modules_summary()
+# Usage: show_all_modules_summary()
 function(show_all_modules_summary)
 
     pretty_message(IMPORTANT_LINE "=" ${BANNER_WIDTH})
@@ -218,7 +216,7 @@ function(show_all_modules_summary)
     pretty_message(STATUS_LINE "=" ${BANNER_WIDTH})
 endfunction()
 
-# 用法: check_module_dependencies(<module_name> REQUIRES dep1 dep2 ... OPTIONAL opt1 opt2 ...)
+# Usage: check_module_dependencies(<module_name> REQUIRES dep1 dep2 ... OPTIONAL opt1 opt2 ...)
 function(check_module_dependencies MODULE_NAME)
     cmake_parse_arguments(ARG "" "" "REQUIRES;OPTIONAL" ${ARGN})
     
@@ -258,7 +256,7 @@ function(check_module_dependencies MODULE_NAME)
     endif()
 endfunction()
 
-# 用法： module_feature(<module_name> <feature_name> <default_value> <description>)
+# Usage： module_feature(<module_name> <feature_name> <default_value> <description>)
 function(module_feature MODULE_NAME FEATURE_NAME DEFAULT_VALUE DESCRIPTION)
     set(OPTION_NAME "${MODULE_NAME}_ENABLE_${FEATURE_NAME}")
     option(${OPTION_NAME} "${DESCRIPTION}" ${DEFAULT_VALUE})

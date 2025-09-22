@@ -1,73 +1,33 @@
 include_guard(GLOBAL)
 
 include(PrettySymbols)
-
-# 彩色输出 
+include(PrettyColors)
+# Colored Output
 option(USE_CMAKE_COLORED_MESSAGES   "Enable colored messages in CMake output for this project" ON)
 option(USE_CPP_COLORED_DEBUG_OUTPUT "Enable colored messages in Debug output for this project" ON)
 option(ENABLE_EXTERNAL_FMT          "Enable external {fmt} (even though std fmt is available)" ON)
 option(MESSAGE_PADDED               "Enable padded to align prefixes for pretty message"       ON)
 
-set(_PRETTY_MESSAGE_MAX_LENGTH 105 CACHE STRING "Max message length for pretty_message"                         FORCE)
+set(_PRETTY_MESSAGE_MAX_LENGTH 105 CACHE STRING "Max message length for pretty_message"                          FORCE)
 set(BANNER_WIDTH               80  CACHE STRING "Banner width affecting all pretty_message with banner or title" FORCE)
-set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"               FORCE)
+set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"                FORCE)
 
-# 使用 string(ASCII <n>) 生成字符以解决 “/0” 无效转义序列问题
-string(ASCII 27 ESC) # ESC: 
-                     #   ASCII Code: 27
-                     #   HEX:        0x1B
-                     #   OCT:        033
-                     
-# --- ANSI 颜色代码定义 ----
-if (USE_CMAKE_COLORED_MESSAGES AND (NOT WIN32 OR CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_COLOR_MAKEFILE))
-    set(C_RESET     "${ESC}[0m" )
-    set(C_BLACK     "${ESC}[30m")
-    set(C_RED       "${ESC}[31m")
-    set(C_GREEN     "${ESC}[32m")
-    set(C_YELLOW    "${ESC}[33m")
-    set(C_BLUE      "${ESC}[34m")
-    set(C_MAGENTA   "${ESC}[35m")
-    set(C_CYAN      "${ESC}[36m")
-    set(C_WHITE     "${ESC}[37m")
-
-    # 粗体/高亮 Bold/Bright
-    set(C_B_BLACK   "${ESC}[1;30m")
-    set(C_B_RED     "${ESC}[1;31m")
-    set(C_B_GREEN   "${ESC}[1;32m")
-    set(C_B_YELLOW  "${ESC}[1;33m")
-    set(C_B_BLUE    "${ESC}[1;34m")
-    set(C_B_MAGENTA "${ESC}[1;35m")
-    set(C_B_CYAN    "${ESC}[1;36m")
-    set(C_B_WHITE   "${ESC}[1;37m")
-else()
-    # 如果环境不支持彩色输出
-    set(C_RESET     "")
-    set(C_BLACK     "")
-    set(C_RED       "")
-    set(C_GREEN     "")
-    set(C_YELLOW    "")
-    set(C_BLUE      "")
-    set(C_MAGENTA   "")
-    set(C_CYAN      "")
-    set(C_WHITE     "")
-
-    set(C_B_BLACK   "")
-    set(C_B_RED     "")
-    set(C_B_GREEN   "")
-    set(C_B_YELLOW  "")
-    set(C_B_BLUE    "")
-    set(C_B_MAGENTA "")
-    set(C_B_CYAN    "")
-    set(C_B_WHITE   "")
-endif()
-
-
-# 设置等宽前缀
-function(_pretty_message_get_padded_prefix _type _output_var)
-    set(_MAX_WIDTH 11)
+# Set equal width prefix
+function(_pretty_message_get_padded_prefix _type _tags _output_var)
     set(_SEPARATOR " | ")
-    set(_prefix_str "[${_type}]")
+    set(_prefix_str "[${_type}]${_tags}")
     string(LENGTH "${_prefix_str}" _prefix_len)
+    # Fixed width for every prefix(Tidier)
+    set(_MAX_WIDTH 23)
+
+    # Dynamic prefix width
+    # set(_MIN_WIDTH 15)
+    # if (_prefix_len GREATER _MIN_WIDTH)
+    #     set(_MAX_WIDTH ${_prefix_len})
+    # else()
+    #     set(_MAX_WIDTH ${_MIN_WIDTH})
+    # endif()
+
     math(EXPR _padding_len "${_MAX_WIDTH} - ${_prefix_len}")
     if (_padding_len LESS 0) 
         set(_padding_len 0)
@@ -78,7 +38,7 @@ function(_pretty_message_get_padded_prefix _type _output_var)
     set(${_output_var} "${_prefix_str}${_padding_spaces}${_SEPARATOR}" PARENT_SCOPE)
 endfunction()
 
-# 重复字符串行
+# Duplicated string line
 function(_pretty_message_create_line char length output_var)
     set(line "")
     foreach(i RANGE ${length})
@@ -87,7 +47,7 @@ function(_pretty_message_create_line char length output_var)
     set(${output_var} "${line}" PARENT_SCOPE)
 endfunction()
 
-# 标题行
+# Header line
 function(_pretty_message_create_banner title char length output_var)
     set(content " ${title} ")
     string(LENGTH "${content}" content_len)
@@ -108,8 +68,8 @@ function(_pretty_message_create_banner title char length output_var)
     set(${output_var} "${banner}" PARENT_SCOPE)
 endfunction()
 
-# 输出项目构建配置中的变量
-# 用法: pretty_message_kv(<TYPE> <变量名> <变量值>) 
+# Output key-values in configurations
+# Usage: pretty_message_kv(<TYPE> <Variable Name> <Variable Value>) 
 function(pretty_message_kv TYPE KEY VALUE)
     set(key_part "  ${SYM_POINT_R} ${KEY}")
 
@@ -129,28 +89,41 @@ function(pretty_message_kv TYPE KEY VALUE)
     pretty_message(${TYPE} "${aligned_message}")
 endfunction()
 
-
-
-# --- 自定义消息函数 ---
-# 1. 简单消息输出
-# 用法: pretty_message(<TYPE> "消息内容...")
+# --- Customized Message Printer ---
+# 1. Simple message output
+# Usage: pretty_message(<TYPE> "Message......")
 # Defined Type:
-#   STATUS      (蓝色粗体) -  常规状态, 比默认 message(STATUS) 更醒目
-#   INFO        (青色)    -  提供参考信息
-#   VINFO       (黄色)    -  CMake中的变量信息
-#   SUCCESS     (绿色粗体) -  操作成功
-#   WARNING     (黄色粗体) -  警告
-#   ERROR       (红色粗体) -  非致命错误 (使用message(SEND_ERROR))
-#   FATAL_ERROR (红色粗体) -  致命错误 (使用message(FATAL_ERROR))
-#   DEBUG       (洋红色)   -  调试信息 (仅在 CMAKE_BUILD_TYPE 为 Debug 时输出)
-#   IMPORTANT   (洋红粗体)  - 重要提示
-#   DEFAULT     (无颜色)   -  使用 message(STATUS) 默认行为
-# 2. 输出固定长度标题（标题居中）
-# 用法: pretty_message(<TYPE>_BANNER <标题内容> <填充内容> <标题行长度>)
-# 3. 输出固定长度分割线
-# 用法: pretty_message(<TYPE>_LINE <分割线内容> <分割线长度>)
-function(pretty_message TYPE MESSAGE)
-    # ARGN 用来获取除 TYPE 和 MESSAGE 外的所有参数
+#   STATUS      (Blue Bold)         -  Normal (more eye-cathing than message(STATUS))
+#   INFO        (Cyan)              -  Reference Info
+#   VINFO       (Yellow)            -  CMake Variable Info 
+#   SUCCESS     (Green Bold)        -  Successful
+#   WARNING     (Yellow Bold)       -  Warning
+#   ERROR       (Red Bold)          -  Not Fatal Error (With message(SEND_ERROR))
+#   FATAL_ERROR (Red Bold)          -  Fatal Error (With message(FATAL_ERROR))
+#   DEBUG       (Magenta)           -  Debug Info (Only effective in CMAKE_BUILD_TYPE as Debug)
+#   IMPORTANT   (Magenta Bold)      - Important Tips 
+#   DEFAULT     (Default Color)     -  Use message(STATUS) default action
+# 2. Output fixed length headline(Title centered)
+# Usage: pretty_message(<TYPE>_BANNER <Headline Content> <Headline Filler> <Headline Length>)
+# 3. Output fixed length division
+# Usage: pretty_message(<TYPE>_LINE <Division Content> <Division Length>)
+function(pretty_message MESSAGE)
+    if (ARGC EQUAL 1)
+        # pretty_message("Message content")
+        #   [MESSAGE] | Message content
+        _pretty_message_core("MESSAGE" "${MESSAGE}")
+        return()
+    endif()
+
+    if (ARGC EQUAL 2)
+        _pretty_message_core("${MESSAGE}" "${ARGV1}")
+    else()
+        _pretty_message_core(${ARGV})
+    endif()
+endfunction()
+
+function(_pretty_message_core TYPE MESSAGE)
+   # Use ARGN to extract the params excluding TYPE and MESSAGE
     string(REGEX MATCH "(.+)_LINE$" _match_base_type ${TYPE})
     if (_match_base_type)
         set(BASE_TYPE ${CMAKE_MATCH_1})
@@ -183,50 +156,64 @@ function(pretty_message TYPE MESSAGE)
     set(COLOR  "")
     set(MSG_CMD "STATUS")
 
+    set(_MAIN_TYPE "${TYPE}")
+    set(_TAGS "")
+
+    # Match variable tags in ${TYPE} in CRITICAL sequence
+    # Example: 
+    #       [_MAIN_TYPE][TAG_1][TAG_2]
+    #       STATUS[Cython][Build]
+    string(REGEX MATCH "^([A-Z_]+)((\\[[^]]*\\])*)" _MATCH_ALL "${TYPE}")
+    if (CMAKE_MATCH_1)
+        set(_MAIN_TYPE "${CMAKE_MATCH_1}")
+        set(_TAGS "${CMAKE_MATCH_2}")
+    endif()
+
     if (MESSAGE_PADDED)
-        if (${TYPE} STREQUAL "OPTIONAL")
-            _pretty_message_get_padded_prefix("WARNING" PREFIX)
+        if (_MAIN_TYPE STREQUAL "OPTIONAL")
+            _pretty_message_get_padded_prefix("WARNING" "${_TAGS}" PREFIX)
         else()
-            _pretty_message_get_padded_prefix(${TYPE}   PREFIX)
+            _pretty_message_get_padded_prefix("${_MAIN_TYPE}" "${_TAGS}" PREFIX)
         endif()
     else()
-        if (${TYPE} STREQUAL "OPTIONAL")
-            set(PREFIX "[WARNING]  | ")
+        if (_MAIN_TYPE STREQUAL "OPTIONAL")
+            set(PREFIX "[WARNING]${_TAGS}  | ")
         else()
-            set(PREFIX "[${TYPE}]  | ")
+            set(PREFIX "[${_MAIN_TYPE}]${_TAGS}  | ")
         endif()
     endif()
 
-        if (${TYPE} STREQUAL "STATUS")
+    if (${_MAIN_TYPE} STREQUAL "STATUS")
             set(COLOR   "${C_B_BLUE}")
-        elseif (${TYPE} STREQUAL "INFO")
+        elseif (${_MAIN_TYPE} STREQUAL "INFO")
             set(COLOR   "${C_CYAN}")
-        elseif (${TYPE} STREQUAL "VINFO")
+        elseif (${_MAIN_TYPE} STREQUAL "VINFO")
             set(COLOR   "${C_YELLOW}")
-        elseif (${TYPE} STREQUAL "SUCCESS")
+        elseif (${_MAIN_TYPE} STREQUAL "SUCCESS")
             set(COLOR   "${C_B_GREEN}")
-        elseif (${TYPE} STREQUAL "OPTIONAL")
+        elseif (${_MAIN_TYPE} STREQUAL "OPTIONAL")
             set(COLOR   "${C_YELLOW}")
-        elseif (${TYPE} STREQUAL "TIP")
+        elseif (${_MAIN_TYPE} STREQUAL "TIP")
             set(COLOR   "${C_MAGENTA}")
-        elseif (${TYPE} STREQUAL "WARNING")
+        elseif (${_MAIN_TYPE} STREQUAL "WARNING")
             set(COLOR   "${C_B_YELLOW}")
             set(MSG_CMD "WARNING")
-        elseif (${TYPE} STREQUAL "ERROR")
+        elseif (${_MAIN_TYPE} STREQUAL "ERROR")
             set(COLOR   "${C_B_RED}")
             set(MSG_CMD "SEND_ERROR")
-        elseif (${TYPE} STREQUAL "FATAL_ERROR")
+        elseif (${_MAIN_TYPE} STREQUAL "FATAL_ERROR")
             set(COLOR   "${C_B_RED}")
             set(MSG_CMD "FATAL_ERROR")
-        elseif (${TYPE} STREQUAL "IMPORTANT")
+        elseif (${_MAIN_TYPE} STREQUAL "IMPORTANT")
             set(COLOR   "${C_B_MAGENTA}")
-        elseif (${TYPE} STREQUAL "DEBUG")
+        elseif (${_MAIN_TYPE} STREQUAL "DEBUG")
             string(TOLOWER "${CMAKE_BUILD_TYPE}" _build_type_lower)
             if (NOT (_build_type_lower STREQUAL "debug" OR _build_type_lower STREQUAL "debug_mode"))
                 return()
             endif()
             set(COLOR   "${C_MAGENTA}")
-        else () # 没有定义的输出类型
+        
+        else () # Undefined message type
             set(COLOR   "")
         endif()
 
@@ -307,7 +294,7 @@ if (USE_CPP_COLORED_DEBUG_OUTPUT)
 endif()
 
 
-# Debug
+# Verbose Info
 function(print_pretty_debug_info)
     pretty_message(DEBUG "PrettyPrint.cmake module loaded.")
     pretty_message(VINFO_BANNER "Pretty Message Info" "=" ${BANNER_WIDTH})

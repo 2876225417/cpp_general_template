@@ -1,3 +1,14 @@
+
+# Build output
+build/
+
+# 3rdparty
+3rdparty/
+
+# Not now
+tests/
+
+
 # Prerequisites
 *.d
 
@@ -30,3 +41,5 @@
 *.exe
 *.out
 *.app
+
+

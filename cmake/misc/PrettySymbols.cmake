@@ -3,8 +3,8 @@ include_guard(GLOBAL)
 option(PRETTY_PRINT_USE_ASCII_FALLBACK "Use simple ASCII characters instead of Unicode symbols" OFF)
 
 if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
-    # --- Unicode 符号 (默认) ---
-    # 状态 (Status)
+    # --- Unicode Symbols ---
+    # Status
     set(SYM_CHECK        "✓")   # Checkmark
     set(SYM_CROSS        "✗")   # Cross
     set(SYM_INFO         "ℹ")   # Information
@@ -17,7 +17,7 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_BELL         "🔔")  # Bell
     set(SYM_BUG          "🐞")  # Bug
 
-    # 箭头 (Arrows)
+    # Arrows
     set(SYM_ARROW_R      "→")   # Right
     set(SYM_ARROW_L      "←")   # Left
     set(SYM_ARROW_U      "↑")   # Up
@@ -26,7 +26,7 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_ARROW_CURVED_R "↪") # Curved Right
     set(SYM_ARROW_CURVED_L "↩") # Curved Left
 
-    # 圆点和星星 (Dots & Stars)
+    # Dots & Stars
     set(SYM_CIRCLE       "○")   # Circle
     set(SYM_CIRCLE_F     "●")   # Filled Circle
     set(SYM_POINT_R      "▶")   # Pointer Right
@@ -34,7 +34,7 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_STAR_F       "★")   # Filled Star
     set(SYM_STAR_E       "☆")   # Empty Star
 
-    # 块元素 (Block Elements)
+    # Block Elements
     set(SYM_BLOCK_FULL   "█")
     set(SYM_BLOCK_7_8    "▉")
     set(SYM_BLOCK_3_4    "▊")
@@ -44,7 +44,7 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_BLOCK_1_4    "▎")
     set(SYM_BLOCK_1_8    "▏")
 
-    # 框线绘制 (Box Drawing) - 单线
+    # Box Drawing - Single Line
     set(SYM_BOX_V          "│") # Vertical
     set(SYM_BOX_H          "─") # Horizontal
     set(SYM_BOX_CORNER_TL  "┌") # Top-Left
@@ -57,7 +57,7 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_BOX_T_LEFT     "┤")
     set(SYM_BOX_CROSS      "┼")
 
-    # 框线绘制 (Box Drawing) - 双线
+    # Box Drawing - Double Line
     set(SYM_BOX2_V         "║")
     set(SYM_BOX2_H         "═")
     set(SYM_BOX2_CORNER_TL "╔")
@@ -65,14 +65,14 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_BOX2_CORNER_BL "╚")
     set(SYM_BOX2_CORNER_BR "╝")
 
-    # 技术符号 (Technical)
+    # Technical
     set(SYM_BRANCH       "") # Git Branch (Nerd Fonts)
     set(SYM_CPU          "") # CPU (Nerd Fonts)
     set(SYM_MEM          "MEM")
     set(SYM_FOLDER       "") # Folder (Nerd Fonts)
     set(SYM_FILE         "") # File (Nerd Fonts)
 
-    # 其他 (Misc)
+    # Misc
     set(SYM_HEART        "❤")
     set(SYM_LIGHTNING    "⚡")
     set(SYM_SMILE        "☺")
@@ -80,9 +80,9 @@ if(NOT PRETTY_PRINT_USE_ASCII_FALLBACK)
     set(SYM_INFINITY     "∞")
 
 else()
-    # --- ASCII 降级替代方案 ---
+    # --- ASCII ---
 
-    # 状态 (Status)
+    # Status
     set(SYM_CHECK        "[OK]")
     set(SYM_CROSS        "[X]")
     set(SYM_INFO         "[i]")
@@ -95,7 +95,7 @@ else()
     set(SYM_BELL         "ALM")
     set(SYM_BUG          "BUG")
 
-    # 箭头 (Arrows)
+    # Arrows
     set(SYM_ARROW_R      "->")
     set(SYM_ARROW_L      "<-")
     set(SYM_ARROW_U      "^")
@@ -104,7 +104,7 @@ else()
     set(SYM_ARROW_CURVED_R "->")
     set(SYM_ARROW_CURVED_L "<-")
 
-    # 圆点和星星 (Dots & Stars)
+    # Dots & Stars
     set(SYM_CIRCLE       "(o)")
     set(SYM_CIRCLE_F     "(*)")
     set(SYM_POINT_R      ">")
@@ -112,7 +112,7 @@ else()
     set(SYM_STAR_F       "*")
     set(SYM_STAR_E       ".")
 
-    # 块元素 (Block Elements)
+    # Block Elements
     set(SYM_BLOCK_FULL   "#")
     set(SYM_BLOCK_7_8    "#")
     set(SYM_BLOCK_3_4    "#")
@@ -122,7 +122,7 @@ else()
     set(SYM_BLOCK_1_4    "#")
     set(SYM_BLOCK_1_8    "#")
 
-    # 框线绘制 (Box Drawing) - 单线
+    # Box Drawing - Single Line 
     set(SYM_BOX_V          "|")
     set(SYM_BOX_H          "-")
     set(SYM_BOX_CORNER_TL  "/")
@@ -135,7 +135,7 @@ else()
     set(SYM_BOX_T_LEFT     "-|")
     set(SYM_BOX_CROSS      "+")
 
-    # 框线绘制 (Box Drawing) - 双线
+    # Box Drawing - Double Line
     set(SYM_BOX2_V         "||")
     set(SYM_BOX2_H         "=")
     set(SYM_BOX2_CORNER_TL  "//")
@@ -143,18 +143,17 @@ else()
     set(SYM_BOX2_CORNER_BL  "\\\\")
     set(SYM_BOX2_CORNER_BR  "//")
 
-    # 技术符号 (Technical)
+    # Technical
     set(SYM_BRANCH       "BR:")
     set(SYM_CPU          "CPU:")
     set(SYM_MEM          "MEM:")
     set(SYM_FOLDER       "DIR:")
     set(SYM_FILE         "FILE:")
 
-    # 其他 (Misc)
+    # Misc
     set(SYM_HEART        "<3")
     set(SYM_LIGHTNING    "~")
     set(SYM_SMILE        ":)")
     set(SYM_PI           "PI")
     set(SYM_INFINITY     "inf")
-
 endif()

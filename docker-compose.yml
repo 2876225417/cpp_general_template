@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: queue_web_quest
+    working_dir: /app
+    volumes:
+      - .:/app
+      - build-cache:/app/build
+      - ccache:/root/.ccache
+    environment:
+      - CC=gcc
+      - CXX=g++
+    stdin_open: true
+    tty: true
+
+volumes:
+  build-cache:
+  ccache:
